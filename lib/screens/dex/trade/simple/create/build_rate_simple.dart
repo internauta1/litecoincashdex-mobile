@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../model/market.dart';
 import '../../../../../widgets/auto_scroll_text.dart';
 import 'package:rational/rational.dart';
 import '../../../../../model/swap_constructor_provider.dart';
@@ -32,12 +31,9 @@ class _BuildRateSimpleState extends State<BuildRateSimple> {
         _isInverse ? _constrProvider.buyCoin : _constrProvider.sellCoin;
     final String otherCoin =
         _isInverse ? _constrProvider.sellCoin : _constrProvider.buyCoin;
-    Rational price = _isInverse
-        ? _constrProvider.matchingOrder.price.inverse
-        : _constrProvider.matchingOrder.price;
-    if (_constrProvider.matchingOrder.action == Market.BUY) {
-      price = price.inverse;
-    }
+    final Rational price = _isInverse
+        ? _constrProvider.matchingOrder.tradePrice
+        : _constrProvider.matchingOrder.tradePrice.inverse;
 
     return InkWell(
       onTap: () => setState(() => _isInverse = !_isInverse),

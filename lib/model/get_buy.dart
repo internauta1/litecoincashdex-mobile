@@ -23,6 +23,7 @@ class GetBuySell {
     this.baseConfs,
     this.relNota,
     this.relConfs,
+    this.matchBy,
   });
 
   factory GetBuySell.fromJson(Map<String, dynamic> json) {
@@ -52,6 +53,7 @@ class GetBuySell {
       baseConfs: json['base_confs'],
       relNota: json['rel_nota'],
       relConfs: json['rel_confs'],
+      matchBy: json['match_by'],
     );
   }
 
@@ -64,6 +66,7 @@ class GetBuySell {
   int baseConfs;
   bool relNota;
   int relConfs;
+  Map<String, dynamic> matchBy;
   dynamic price; // numerical String or {'numer': '1', 'denom': '3'}
   dynamic volume; // https://bit.ly/2O2DxWh
 
@@ -83,6 +86,7 @@ class GetBuySell {
         'base_confs': baseConfs,
         'rel_nota': relNota,
         'rel_confs': relConfs,
+        if (matchBy != null) 'match_by': matchBy,
       };
 }
 

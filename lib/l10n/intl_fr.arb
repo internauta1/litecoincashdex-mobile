@@ -37,7 +37,7 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "welcomeInfo": "Komodo Wallet est un portefeuille multi crypto-monnaies de nouvelle génération doté de la fonctionnalité DEX native de troisième génération et encore bien plus.",
+    "welcomeInfo": "Litecoin Cash Wallet est un portefeuille multi crypto-monnaies de nouvelle génération doté de la fonctionnalité DEX native de troisième génération et encore bien plus.",
     "@welcomeInfo": {
         "type": "text",
         "placeholders_order": [
@@ -2345,7 +2345,7 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "builtKomodo": "Conçu sur Komodo",
+    "builtKomodo": "Litecoin Cash DEX",
     "@builtKomodo": {
         "type": "text",
         "placeholders_order": [],
@@ -2849,13 +2849,13 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "builtOnKmd": "Conçu sur Komodo",
+    "builtOnKmd": "Litecoin Cash DEX",
     "@builtOnKmd": {
         "type": "text",
         "placeholders_order": [],
         "placeholders": {}
     },
-    "poweredOnKmd": "Propulsé par Komodo",
+    "poweredOnKmd": "Powered by Litecoin Cash",
     "@poweredOnKmd": {
         "type": "text",
         "placeholders_order": [],
@@ -5449,7 +5449,7 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "rebrandingAnnouncement": "C'est une nouvelle ère ! Nous avons officiellement changé notre nom de 'AtomicDEX' en 'Komodo Wallet'",
+    "rebrandingAnnouncement": "C'est une nouvelle ère ! Nous avons officiellement changé notre nom de 'Litecoin Cash DEX' en 'Litecoin Cash Wallet'",
     "@rebrandingAnnouncement": {
         "type": "text",
         "placeholders_order": [],

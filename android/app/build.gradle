@@ -32,11 +32,11 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
 
     defaultConfig {
-        applicationId "com.komodoplatform.atomicdex"
+        applicationId "com.litecoincash.mobile"
         minSdkVersion 28
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()

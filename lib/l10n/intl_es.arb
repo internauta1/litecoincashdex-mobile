@@ -2313,7 +2313,7 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "builtKomodo": "Construido en Komodo",
+    "builtKomodo": "Litecoin Cash DEX",
     "@builtKomodo": {
         "type": "text",
         "placeholders_order": [],
@@ -2817,13 +2817,13 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "builtOnKmd": "Construido en Komodo",
+    "builtOnKmd": "Litecoin Cash DEX",
     "@builtOnKmd": {
         "type": "text",
         "placeholders_order": [],
         "placeholders": {}
     },
-    "poweredOnKmd": "Desarrollado por Komodo",
+    "poweredOnKmd": "Powered by Litecoin Cash",
     "@poweredOnKmd": {
         "type": "text",
         "placeholders_order": [],
@@ -5407,7 +5407,7 @@
         "placeholders_order": [],
         "placeholders": {}
     },
-    "rebrandingAnnouncement": "¡Es una nueva era! Hemos cambiado oficialmente nuestro nombre de 'AtomicDEX' a 'Komodo Wallet'",
+    "rebrandingAnnouncement": "¡Es una nueva era! Hemos cambiado oficialmente nuestro nombre de 'Litecoin Cash DEX' a 'Litecoin Cash Wallet'",
     "@rebrandingAnnouncement": {
         "type": "text",
         "placeholders_order": [],

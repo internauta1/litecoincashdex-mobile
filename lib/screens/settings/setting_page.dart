@@ -76,7 +76,9 @@ class _SettingPageState extends State<SettingPage> {
     return LockScreen(
       context: context,
       child: Scaffold(
+        backgroundColor: const Color(0xFF003F22),
         appBar: AppBar(
+          backgroundColor: const Color(0xFF003F22),
           title: Text(
             AppLocalizations.of(context).settings.toUpperCase(),
             key: const Key('settings-title'),

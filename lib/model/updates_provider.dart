@@ -84,8 +84,8 @@ class UpdatesProvider extends ChangeNotifier {
 
       isFetching = false;
       status = UpdateStatus.upToDate;
-      mainBloc.setNetworkStatus(NetworkStatus.Offline);
-      notifyListeners();
+        // LCC Wallet: update checker failure must not mark the wallet offline.
+notifyListeners();
       return;
     }
 

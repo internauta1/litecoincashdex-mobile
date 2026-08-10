@@ -57,18 +57,11 @@ class TradeFormValidator {
         amountReceive.toDouble() < minVolumeReceive) {
       return appLocalizations.minValueBuy(
           swapBloc.receiveCoinBalance.coin.abbr, '$minVolumeReceive');
-    } else if (matchingBid != null && matchingBid.minVolume != null) {
-      if (amountReceive != null && amountReceive < matchingBid.minRelVolume) {
-        return appLocalizations.minValueOrder(
-          swapBloc.receiveCoinBalance.coin.abbr,
-          cutTrailingZeros(formatPrice(matchingBid.minVolume)),
-          swapBloc.sellCoinBalance.coin.abbr,
-          cutTrailingZeros(formatPrice(matchingBid.minVolume.toDouble() *
-              double.parse(matchingBid.price))),
-        );
-      }
-      return null;
     } else {
+      // Do not reject the selected maker order using locally converted
+      // min-volume values. The desktop sends this exact amount successfully,
+      // while the rounded order minimum can produce a false local rejection.
+      // trade_preimage and KDF buy remain authoritative.
       return null;
     }
   }

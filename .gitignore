@@ -101,3 +101,28 @@ ios/libmm2.a
 
 # FVM Version Cache
 .fvm/
+
+# Litecoin Cash community build artifacts
+*.apk
+*.a
+*.keystore
+*.jks
+key.properties
+*.log
+*.tar
+*.tar.gz
+
+# Local experiments and backups
+*.bak
+*.bak-*
+*.backup-*
+*.before-*
+*.good-*
+*.partial-*
+*.concat-invalid-*
+STABLE-STATE-*
+STABLE-CHANGES-*
+RELEASE-CANDIDATE-*
+android-icon-backups-*/
+backups-*/
+dex-safe-backups-*/

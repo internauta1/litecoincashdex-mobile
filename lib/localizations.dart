@@ -851,7 +851,7 @@ class AppLocalizations {
   String get noInternet =>
       Intl.message('No Internet Connection', name: 'noInternet');
   String get builtKomodo =>
-      Intl.message('Built on Komodo', name: 'builtKomodo');
+      Intl.message('Litecoin Cash DEX', name: 'builtKomodo');
   String get pleaseAddCoin =>
       Intl.message('Please Add A Coin', name: 'pleaseAddCoin');
   String get internetRestored =>
@@ -1009,9 +1009,9 @@ class AppLocalizations {
   String get tagETC => Intl.message('ETC', name: 'tagETC');
   String get tagSBCH => Intl.message('SBCH', name: 'tagSBCH');
   String get tagUBQ => Intl.message('UBQ', name: 'tagUBQ');
-  String get builtOnKmd => Intl.message('Built on Komodo', name: 'builtOnKmd');
+  String get builtOnKmd => Intl.message('Litecoin Cash DEX', name: 'builtOnKmd');
   String get poweredOnKmd =>
-      Intl.message('Powered by Komodo', name: 'poweredOnKmd');
+      Intl.message('Powered by Litecoin Cash', name: 'poweredOnKmd');
 
   String errorNotEnoughGas(String gas) =>
       Intl.message('Not enough gas - use at least $gas Gwei',
@@ -1896,7 +1896,7 @@ class AppLocalizations {
 
   // Rebranding
   String get rebrandingAnnouncement => Intl.message(
-      "It's a new era! We have officially rebranded from 'AtomicDEX' to 'Komodo Wallet'",
+      "It's a new era! We have officially rebranded from 'Litecoin Cash DEX' to 'Litecoin Cash Wallet'",
       name: 'rebrandingAnnouncement');
 
   String get officialPressRelease =>

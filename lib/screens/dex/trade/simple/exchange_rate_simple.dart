@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../model/market.dart';
 import 'package:provider/provider.dart';
 import 'package:rational/rational.dart';
 import '../../../../model/swap_constructor_provider.dart';
@@ -67,9 +66,8 @@ class _ExchangeRateSimpleState extends State<ExchangeRateSimple> {
     if (_constrProvider.matchingOrder == null) {
       _rate = null;
     } else {
-      final Rational price = _constrProvider.matchingOrder.action == Market.SELL
-          ? _constrProvider.matchingOrder.price
-          : _constrProvider.matchingOrder.price.inverse;
+      final Rational price =
+          _constrProvider.matchingOrder.tradePrice.inverse;
       _rate = price.toDouble();
     }
   }

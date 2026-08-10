@@ -407,9 +407,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "bestAvailableRate":
             MessageLookupByLibrary.simpleMessage("Wechselkurs"),
         "builtKomodo":
-            MessageLookupByLibrary.simpleMessage("Auf Komodo aufgebaut"),
+            MessageLookupByLibrary.simpleMessage("Litecoin Cash DEX"),
         "builtOnKmd":
-            MessageLookupByLibrary.simpleMessage("Auf Komodo aufgebaut"),
+            MessageLookupByLibrary.simpleMessage("Litecoin Cash DEX"),
         "buy": MessageLookupByLibrary.simpleMessage("Kaufen"),
         "buyOrderType": MessageLookupByLibrary.simpleMessage(
             "In Maker-Auftrag umwandeln, wenn kein match stattgefunden hat"),
@@ -1180,7 +1180,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Bitte starten Sie die App neu, um es erneut zu versuchen, oder drücken Sie die Schaltfläche unten."),
         "portfolio": MessageLookupByLibrary.simpleMessage("Portfolio"),
         "poweredOnKmd":
-            MessageLookupByLibrary.simpleMessage("Unterstützt von Komodo"),
+            MessageLookupByLibrary.simpleMessage("Powered by Litecoin Cash"),
         "price": MessageLookupByLibrary.simpleMessage("Preis"),
         "privateKey":
             MessageLookupByLibrary.simpleMessage("Privater Schlüssel"),
@@ -1214,7 +1214,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "question_8": m90,
         "question_9": m91,
         "rebrandingAnnouncement": MessageLookupByLibrary.simpleMessage(
-            "Es ist eine neue Ära! Wir haben unseren Namen offiziell von „AtomicDEX“ in „Komodo Wallet“ geändert."),
+            "Es ist eine neue Ära! Wir haben unseren Namen offiziell von „Litecoin Cash DEX“ in „Litecoin Cash Wallet“ geändert."),
         "receive": MessageLookupByLibrary.simpleMessage("ERHALTEN"),
         "receiveLower": MessageLookupByLibrary.simpleMessage("Erhalten"),
         "recommendSeedMessage": MessageLookupByLibrary.simpleMessage(

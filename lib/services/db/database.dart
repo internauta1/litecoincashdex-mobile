@@ -30,7 +30,7 @@ class Db {
 
   static Future<Database> _initDB() async {
     final Directory documentsDirectory = await applicationDocumentsDirectory;
-    final String path = join(documentsDirectory.path, 'AtomicDEX.db');
+    final String path = join(documentsDirectory.path, 'LitecoinCash.db');
     String _articleTable = '''
       CREATE TABLE ArticlesSaved (
           id TEXT PRIMARY KEY,

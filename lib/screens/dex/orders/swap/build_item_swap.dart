@@ -59,53 +59,65 @@ class _BuildItemSwapState extends State<BuildItemSwap> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              myCoin,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                            const SizedBox(width: 4),
-                            _buildIcon(myCoin),
-                          ],
-                        ),
-                        Text(
-                          formatPrice(myAmount, 8),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Flexible(
+                                child: Text(
+                                  myCoin,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              _buildIcon(myCoin),
+                            ],
                           ),
-                        )
-                      ],
+                          Text(
+                            formatPrice(myAmount, 8),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                     Container(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Icon(Icons.swap_horiz),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            _buildIcon(otherCoin),
-                            const SizedBox(width: 4),
-                            Text(
-                              otherCoin,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          formatPrice(otherAmount, 8),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              _buildIcon(otherCoin),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  otherCoin,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                            ],
                           ),
-                        )
-                      ],
+                          Text(
+                            formatPrice(otherAmount, 8),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -160,14 +172,12 @@ class _BuildItemSwapState extends State<BuildItemSwap> {
                     ),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.only(bottom: 16),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 280),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             vertical: 6, horizontal: 12),
@@ -176,29 +186,33 @@ class _BuildItemSwapState extends State<BuildItemSwap> {
                               const BorderRadius.all(Radius.circular(24)),
                           color: colorStatus,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(stepStatus,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                stepStatus,
                                 style: Theme.of(context)
                                     .textTheme
                                     .caption
-                                    .copyWith(color: Colors.white)),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Text(swapStatus,
+                                    .copyWith(color: Colors.white),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                swapStatus,
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyText1
-                                    .copyWith(
-                                      color: Colors.white,
-                                    ))
-                          ],
+                                    .copyWith(color: Colors.white),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    )
-                  ],
+                    ),
+                  ),
                 ),
                 if (widget.swap.result.recoverable)
                   recoverIsLoading

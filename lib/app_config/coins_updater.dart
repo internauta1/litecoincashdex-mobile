@@ -38,7 +38,7 @@ class CoinUpdater {
   static const coinsRepoUrl =
       'https://raw.githubusercontent.com/KomodoPlatform/coins';
 
-  static const isUpdateEnabled = true;
+  static const isUpdateEnabled = false;
 
   final String localAssetPathConfig = 'assets/coins_config_tcp.json';
   final String localAssetPathCoins = 'assets/coins.json';
@@ -80,6 +80,13 @@ class CoinUpdater {
           'CoinUpdater',
           'Error reading coin config cache file: ${e.toString()}',
         );
+      }
+
+      // When remote updates are disabled, always use the configuration
+      // bundled in this APK. An old cache left by a previous installation
+      // must not override updated Electrum servers or the custom LCC config.
+      if (!isUpdateEnabled) {
+        property = null;
       }
 
       property ??= await _fetchAsset(params.localPath);

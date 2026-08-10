@@ -15,11 +15,9 @@ class RebrandingProvider extends ChangeNotifier {
 
   Future<void> get prefsLoaded => _loadPrefs();
 
-  bool get shouldShowRebrandingDialog =>
-      !isRebrandingExpired && !closedPermanently && !closedThisSession;
+  bool get shouldShowRebrandingDialog => false;
 
-  bool get shouldShowRebrandingNews =>
-      !isRebrandingExpired && !closedPermanently;
+  bool get shouldShowRebrandingNews => false;
 
   Future<void> _loadPrefs() async {
     _prefs = await SharedPreferences.getInstance();

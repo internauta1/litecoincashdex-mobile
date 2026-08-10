@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -223,6 +224,67 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         if (didNeedWakeUp) _requestResync();
 
+        // Android does not use wakeUpSuspendedApi. Refresh existing KDF state
+        // without restarting it, because an atomic swap may still be active.
+        if (Platform.isAndroid) {
+          try {
+            final bool rpcUp = await MM.isRpcUp().timeout(
+                  const Duration(seconds: 5),
+                  onTimeout: () => false,
+                );
+
+            if (rpcUp) {
+              final int peersBefore =
+                  await MM.getDirectlyConnectedPeersCount().timeout(
+                        const Duration(seconds: 5),
+                        onTimeout: () => null,
+                      );
+
+              int peersAfterDelay = peersBefore;
+
+              // Android can restore the local RPC before restoring libp2p
+              // sockets. Give KDF a short opportunity to reconnect naturally.
+              if (peersBefore == 0) {
+                await Future<void>.delayed(const Duration(seconds: 8));
+                peersAfterDelay =
+                    await MM.getDirectlyConnectedPeersCount().timeout(
+                          const Duration(seconds: 5),
+                          onTimeout: () => null,
+                        );
+              }
+
+              Log('MM_P2P_RESUME',
+                  'peers before=$peersBefore afterDelay=$peersAfterDelay');
+
+              final bool coinsLoaded = await mmSe
+                  .hasCoinsLoaded()
+                  .timeout(const Duration(seconds: 5));
+
+              if (!coinsLoaded) {
+                await mmSe.initCoinsAndLoad();
+                _requestResync();
+              }
+
+              await mmSe
+                  .updateOrdersAndSwaps()
+                  .timeout(const Duration(seconds: 15));
+
+              if (mounted) {
+                await context
+                    .read<OrderBookProvider>()
+                    .refreshAfterResume()
+                    .timeout(const Duration(seconds: 30));
+              }
+
+              Log('main', 'Android KDF/DEX resume refresh completed');
+            } else {
+              Log('main', 'Android resumed but KDF RPC did not respond');
+            }
+          } catch (e) {
+            Log('main', 'Android KDF/DEX resume refresh failed: $e');
+          }
+        }
+
         break;
     }
   }
@@ -263,6 +325,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                       builder: (BuildContext cont,
                           AsyncSnapshot<bool> currentTheme) {
                         return MaterialApp(
+                            debugShowCheckedModeBanner: false,
                             title: appConfig.appName,
                             localizationsDelegates: const <
                                 LocalizationsDelegate<dynamic>>[

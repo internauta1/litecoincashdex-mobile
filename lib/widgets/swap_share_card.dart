@@ -61,7 +61,7 @@ class SwapShareCard extends StatelessWidget {
                           alignment: Alignment.bottomRight,
                           children: [
                             Image.asset(
-                              'assets/swap_share/swap_share_atomicdex_logo.png',
+                              'assets/branding/logo_app.png',
                               height: 24,
                             ),
                             Text(
@@ -240,7 +240,7 @@ class SwapShareCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                'Download Komodo Wallet on komodoplatform.com',
+                                'Download Litecoin Cash Wallet on litecoincash.com.br',
                                 style: TextStyle(fontSize: 6),
                               ),
                             ],

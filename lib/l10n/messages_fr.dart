@@ -315,7 +315,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Activation ${coinAbbr} échoué.\nVeuillez redémarrer l\'application et réessayer.";
 
   static m119(appName) =>
-      "Komodo Wallet est un portefeuille multi crypto-monnaies de nouvelle génération doté de la fonctionnalité DEX native de troisième génération et encore bien plus.";
+      "Litecoin Cash Wallet est un portefeuille multi crypto-monnaies de nouvelle génération doté de la fonctionnalité DEX native de troisième génération et encore bien plus.";
 
   static m120(appName) =>
       "Vous avez précédemment refusé à ${appName} l\'accès à la caméra.\nVeuillez modifier manuellement l\'autorisation de l\'appareil photo dans les paramètres de votre téléphone pour procéder à l\'analyse du code QR.";
@@ -408,8 +408,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "Votre téléphone est en mode d\'économie de batterie. Veuillez désactiver ce mode ou ne PAS mettre l\'application en arrière-plan, sinon l\'application pourrait être tuée par le système d\'exploitation et l\'échange échouerait."),
         "bestAvailableRate":
             MessageLookupByLibrary.simpleMessage("Meilleur tarif disponible"),
-        "builtKomodo": MessageLookupByLibrary.simpleMessage("Conçu sur Komodo"),
-        "builtOnKmd": MessageLookupByLibrary.simpleMessage("Conçu sur Komodo"),
+        "builtKomodo": MessageLookupByLibrary.simpleMessage("Litecoin Cash DEX"),
+        "builtOnKmd": MessageLookupByLibrary.simpleMessage("Litecoin Cash DEX"),
         "buy": MessageLookupByLibrary.simpleMessage("Acheter"),
         "buyOrderType": MessageLookupByLibrary.simpleMessage(
             "Convertir en Maker s\'il n\'y a pas de correspondance"),
@@ -1167,7 +1167,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Veuillez redémarrer l\'application pour réessayer, ou appuyer sur le bouton ci-dessous."),
         "portfolio": MessageLookupByLibrary.simpleMessage("Portfolio"),
         "poweredOnKmd":
-            MessageLookupByLibrary.simpleMessage("Propulsé par Komodo"),
+            MessageLookupByLibrary.simpleMessage("Powered by Litecoin Cash"),
         "price": MessageLookupByLibrary.simpleMessage("prix"),
         "privateKey": MessageLookupByLibrary.simpleMessage("Clé privée"),
         "privateKeys": MessageLookupByLibrary.simpleMessage("Clés privées"),
@@ -1198,7 +1198,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "question_8": m90,
         "question_9": m91,
         "rebrandingAnnouncement": MessageLookupByLibrary.simpleMessage(
-            "C\'est une nouvelle ère ! Nous avons officiellement changé notre nom de \'AtomicDEX\' en \'Komodo Wallet\'"),
+            "C\'est une nouvelle ère ! Nous avons officiellement changé notre nom de \'Litecoin Cash DEX\' en \'Litecoin Cash Wallet\'"),
         "receive": MessageLookupByLibrary.simpleMessage("RECEVOIR"),
         "receiveLower": MessageLookupByLibrary.simpleMessage("Recevoir"),
         "recommendSeedMessage": MessageLookupByLibrary.simpleMessage(

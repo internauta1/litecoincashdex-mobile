@@ -12,6 +12,7 @@ class GetBestOrders {
     this.coin,
     this.volume,
     this.action,
+    this.excludeMine = true,
   });
 
   String userpass;
@@ -20,6 +21,7 @@ class GetBestOrders {
   String coin;
   Rational volume;
   Market action;
+  bool excludeMine;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'method': method,
@@ -28,6 +30,7 @@ class GetBestOrders {
         'params': {
           'coin': coin,
           'action': action == Market.BUY ? 'buy' : 'sell',
+          'exclude_mine': excludeMine,
           'request_by': {
             'type': 'volume',
             'value': volume.toDecimalString(),

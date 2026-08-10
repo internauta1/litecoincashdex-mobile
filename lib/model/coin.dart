@@ -78,6 +78,23 @@ class Coin {
     mm2 = init['mm2'] ?? 0;
     abbr = init['coin'] ?? config['abbr'] ?? '';
     coingeckoId = config['coingeckoId'] ?? '';
+
+    if (coingeckoId == null || coingeckoId.isEmpty) {
+      const Map<String, String> knownCoingeckoIds = {
+        'BTC': 'bitcoin',
+        'BCH': 'bitcoin-cash',
+        'LTC': 'litecoin',
+        'DOGE': 'dogecoin',
+        'DASH': 'dash',
+        'ETH': 'ethereum',
+        'MATIC': 'polygon',
+        'BNB': 'binancecoin',
+        'LCC': 'litecoin-cash',
+        'LCC-segwit': 'litecoin-cash',
+      };
+
+      coingeckoId = knownCoingeckoIds[abbr] ?? '';
+    }
     testCoin = config['testCoin'] ?? false;
     swapContractAddress =
         config['swap_contract_address'] ?? config['contract_address'] ?? '';

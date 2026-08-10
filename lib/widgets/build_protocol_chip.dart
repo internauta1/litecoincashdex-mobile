@@ -14,7 +14,7 @@ class BuildProtocolChip extends StatelessWidget {
 
     final BoxDecoration decoration = BoxDecoration(
       borderRadius: const BorderRadius.all(Radius.circular(16)),
-      color: const Color.fromRGBO(20, 117, 186, 1),
+      color: const Color(0xFF00A651),
     );
     final TextStyle style =
         Theme.of(context).textTheme.subtitle2.copyWith(color: Colors.white);
@@ -77,7 +77,7 @@ class BuildProtocolChip extends StatelessWidget {
                       color: Theme.of(context).scaffoldBackgroundColor),
                   padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                   child: Image.asset(
-                    'assets/coin-icons/kmd.png',
+                    'assets/coin-icons/lcc.png',
                     width: 18,
                     height: 18,
                   ),

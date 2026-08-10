@@ -77,13 +77,14 @@ class _SellFormState extends State<SellForm> {
   }
 
   Widget _buildButton(double pct) {
-    final Rational buttonAmt = _constrProvider.maxSellAmt *
-        Rational.parse('$pct') /
-        Rational.parse('100');
-    final String formattedButtonAmt = cutTrailingZeros(
-        buttonAmt.toStringAsFixed(appConfig.tradeFormPrecision));
+    final Rational buttonAmt =
+        _constrProvider.sellAmountForPercentage(pct);
+    final String formattedButtonAmt = buttonAmt == null
+        ? ''
+        : cutTrailingZeros(
+            buttonAmt.toStringAsFixed(appConfig.tradeFormPrecision));
     final bool isActive = formattedButtonAmt == _amtCtrl.text;
-    final bool disabled = (_constrProvider.maxSellAmt?.toDouble() ?? 0) == 0;
+    final bool disabled = buttonAmt == null || buttonAmt.toDouble() == 0;
 
     return Expanded(
       child: InkWell(

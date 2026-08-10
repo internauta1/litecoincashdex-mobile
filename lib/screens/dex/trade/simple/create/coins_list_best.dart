@@ -123,18 +123,20 @@ class _CoinsListBestState extends State<CoinsListBest> {
     }
 
     topOrdersList.sort((a, b) {
-      final String aCoin = a.action == Market.SELL ? a.coin : a.otherCoin;
-      final String bCoin = b.action == Market.SELL ? b.coin : b.otherCoin;
+      final String aCoin = a.selectionCoin;
+      final String bCoin = b.selectionCoin;
       final aCexPrice = _cexProvider.getUsdPrice(aCoin);
       final bCexPrice = _cexProvider.getUsdPrice(bCoin);
 
       if (aCexPrice == 0 && bCexPrice != 0) return 1;
       if (aCexPrice != 0 && bCexPrice == 0) return -1;
 
-      if (b.price.toDouble() * bCexPrice > a.price.toDouble() * aCexPrice) {
+      if (b.tradePrice.toDouble() * bCexPrice >
+          a.tradePrice.toDouble() * aCexPrice) {
         return a.action == Market.SELL ? 1 : -1;
       }
-      if (b.price.toDouble() * bCexPrice < a.price.toDouble() * aCexPrice) {
+      if (b.tradePrice.toDouble() * bCexPrice <
+          a.tradePrice.toDouble() * aCexPrice) {
         return a.action == Market.SELL ? -1 : 1;
       }
 
@@ -145,8 +147,7 @@ class _CoinsListBestState extends State<CoinsListBest> {
     final List<Widget> items = [];
     bool switcherDisabled = true;
     for (BestOrder topOrder in topOrdersList) {
-      final String abbr =
-          topOrder.action == Market.BUY ? topOrder.otherCoin : topOrder.coin;
+      final String abbr = topOrder.selectionCoin;
 
       final Coin coin = known[abbr];
       final String term = widget.searchTerm.toLowerCase().trim();

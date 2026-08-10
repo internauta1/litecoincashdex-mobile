@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background_color">#FFFFFF</color>
-    <color name="icon_foreground_color">#FFFFFF</color>
+    <color name="background_color">#005A2C</color>
+    <color name="icon_foreground_color">#00A651</color>
+    <color name="lcc_launcher_background">#00A651</color>
+    <color name="ic_launcher_background">#00A651</color>
 </resources>

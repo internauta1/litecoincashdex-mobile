@@ -43,9 +43,7 @@ class _CoinsListBestItemState extends State<CoinsListBestItem>
 
     _constrProvider ??= Provider.of<ConstructorProvider>(context);
     _cexProvider ??= Provider.of<CexProvider>(context);
-    _coin = widget.order.action == Market.SELL
-        ? widget.order.coin
-        : widget.order.otherCoin;
+    _coin = widget.order.selectionCoin;
 
     return StreamBuilder<List<CoinBalance>>(
         initialData: coinsBloc.coinBalance,
@@ -282,8 +280,8 @@ class _CoinsListBestItemState extends State<CoinsListBestItem>
 
   Widget _buildFiatAmt() {
     final String counterCoin = widget.order.action == Market.BUY
-        ? _constrProvider.buyCoin
-        : _constrProvider.sellCoin;
+        ? widget.order.buyCoin
+        : widget.order.sellCoin;
     final Rational counterAmount = widget.order.action == Market.BUY
         ? _constrProvider.buyAmount
         : _constrProvider.sellAmount;
@@ -294,8 +292,10 @@ class _CoinsListBestItemState extends State<CoinsListBestItem>
     Color color = Theme.of(context).textTheme.caption.color;
 
     if (cexPrice != 0) {
-      final double receiveAmtUsd =
-          cexPrice * widget.order.price.toDouble() * counterAmount.toDouble();
+      final Rational selectedAmount = widget.order.action == Market.BUY
+          ? counterAmount * widget.order.tradePrice
+          : counterAmount / widget.order.tradePrice;
+      final double receiveAmtUsd = cexPrice * selectedAmount.toDouble();
       receiveStr = _cexProvider.convert(receiveAmtUsd);
 
       if (counterCexPrice != 0) {
@@ -311,9 +311,10 @@ class _CoinsListBestItemState extends State<CoinsListBestItem>
         }
       }
     } else {
-      final double receiveAmt =
-          widget.order.price.toDouble() * counterAmount.toDouble();
-      receiveStr = cutTrailingZeros(formatPrice(receiveAmt)) + ' ' + _coin;
+      final Rational selectedAmount = widget.order.action == Market.BUY
+          ? counterAmount * widget.order.tradePrice
+          : counterAmount / widget.order.tradePrice;
+      receiveStr = cutTrailingZeros(formatPrice(selectedAmount)) + ' ' + _coin;
     }
 
     return Row(

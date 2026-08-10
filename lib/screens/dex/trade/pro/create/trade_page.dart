@@ -379,14 +379,40 @@ class _TradePageState extends State<TradePage> with TickerProviderStateMixin {
 
     swapBloc.enabledReceiveField = false;
     swapBloc.updateReceiveCoin(bid.coin);
-    tradeForm.updateAmountReceive(bid.getReceiveAmount(swapBloc.amountSell));
 
-    final Rational amountSell = swapBloc.amountSell;
-    final Rational bidPrice = fract2rat(bid.priceFract);
-    final Rational bidVolume = fract2rat(bid.maxvolumeFract);
+    final Rational requestedSell = swapBloc.amountSell;
+    final Rational bidVolume = fract2rat(bid.maxvolumeFract) ??
+        Rational.parse(bid.maxvolume.toString());
+    final Rational bidMinVolume = bid.minVolume;
 
-    if (amountSell > bidVolume * bidPrice) {
-      tradeForm.updateAmountSell(bidVolume * bidPrice);
+    // Orders whose minimum equals their maximum are indivisible. Values shown
+    // in the form are rounded to the UI precision and can become microscopically
+    // smaller than the maker minimum. Selecting such an order must therefore
+    // use the exact fractions returned by the orderbook.
+    final bool isFixedSizeOrder =
+        bidMinVolume != null && bidMinVolume == bidVolume;
+
+    if (isFixedSizeOrder) {
+      final Rational exactReceive =
+          bid.minRelVolume ?? bid.getReceiveAmount(bidVolume);
+
+      tradeForm.updateAmountSell(bidVolume);
+      tradeForm.updateAmountReceive(exactReceive);
+      swapBloc.setIsMaxActive(false);
+      swapBloc.shouldBuyOut = true;
+
+      Log(
+          'LCC_FIXED_ORDER_EXACT',
+          'coin=${bid.coin} sell=$bidVolume receive=$exactReceive '
+              'min=$bidMinVolume');
+
+      return;
+    }
+
+    tradeForm.updateAmountReceive(bid.getReceiveAmount(requestedSell));
+
+    if (requestedSell > bidVolume) {
+      tradeForm.updateAmountSell(bidVolume);
       swapBloc.setIsMaxActive(false);
     }
   }

@@ -40,7 +40,7 @@ dependencies:
 
   http: 0.13.4 # dart.dev (Note: Supports null safety)
 
-  crypto: 3.0.1 # dart.dev (Note: Supports null safety)
+  crypto: 3.0.2 # dart.dev (Note: Supports null safety)
 
 
   #-------fluttercommunity.dev------
@@ -177,6 +177,7 @@ dev_dependencies:
 
   # recommended linter rules
   flutter_lints: 1.0.4 # flutter.dev (Note: Supports null safety)
+  flutter_launcher_icons: 0.9.3
   
 
 flutter_icons:
@@ -185,7 +186,7 @@ flutter_icons:
   remove_alpha_ios: true
   image_path: "assets/branding/logo_app.png"
   image_path_ios: "assets/branding/ios_app_icon.png"
-  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_background: "#00A651"
   adaptive_icon_foreground: "assets/branding/ic_launcher.png"
 
 # For information on the generic Dart part of this file, see the

@@ -390,8 +390,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "Your phone is in battery saving mode. Please disable this mode or do NOT put the application to the background, otherwise, the app might be killed by OS and swap failed."),
         "bestAvailableRate":
             MessageLookupByLibrary.simpleMessage("Exchange rate"),
-        "builtKomodo": MessageLookupByLibrary.simpleMessage("Built on Komodo"),
-        "builtOnKmd": MessageLookupByLibrary.simpleMessage("Built on Komodo"),
+        "builtKomodo": MessageLookupByLibrary.simpleMessage("Litecoin Cash DEX"),
+        "builtOnKmd": MessageLookupByLibrary.simpleMessage("Litecoin Cash DEX"),
         "buy": MessageLookupByLibrary.simpleMessage("Buy"),
         "buyOrderType": MessageLookupByLibrary.simpleMessage(
             "Convert to Maker if not matched"),
@@ -1123,7 +1123,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Please restart the app to try again, or press the button below."),
         "portfolio": MessageLookupByLibrary.simpleMessage("Portfolio"),
         "poweredOnKmd":
-            MessageLookupByLibrary.simpleMessage("Powered by Komodo"),
+            MessageLookupByLibrary.simpleMessage("Powered by Litecoin Cash"),
         "price": MessageLookupByLibrary.simpleMessage("price"),
         "privateKey": MessageLookupByLibrary.simpleMessage("Private Key"),
         "privateKeys": MessageLookupByLibrary.simpleMessage("Private Keys"),
@@ -1154,7 +1154,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "question_8": m90,
         "question_9": m91,
         "rebrandingAnnouncement": MessageLookupByLibrary.simpleMessage(
-            "It\'s a new era! We have officially rebranded from \'AtomicDEX\' to \'Komodo Wallet\'"),
+            "It\'s a new era! We have officially rebranded from \'Litecoin Cash DEX\' to \'Litecoin Cash Wallet\'"),
         "receive": MessageLookupByLibrary.simpleMessage("RECEIVE"),
         "receiveLower": MessageLookupByLibrary.simpleMessage("Receive"),
         "recommendSeedMessage": MessageLookupByLibrary.simpleMessage(

@@ -20,6 +20,7 @@ import '../model/trade_preimage.dart';
 import '../screens/dex/trade/pro/confirm/protection_control.dart';
 import '../services/mm.dart';
 import '../services/mm_service.dart';
+import '../utils/log.dart';
 import '../utils/utils.dart';
 
 class ConstructorProvider extends ChangeNotifier {
@@ -108,20 +109,17 @@ class ConstructorProvider extends ChangeNotifier {
       if (value > maxSellAmt) value = maxSellAmt;
 
       if (_matchingOrder != null) {
-        final Rational price = _matchingOrder.action == Market.SELL
-            ? _matchingOrder.price
-            : _matchingOrder.price.inverse;
-
-        final Rational maxOrderAmt = _matchingOrder.maxVolume / price;
+        final Rational price = _matchingOrder.tradePrice;
+        final Rational maxOrderAmt = _matchingOrder.maxSellVolume;
         // if > than order max volume
-        if (value > maxOrderAmt) {
+        if (maxOrderAmt != null && value > maxOrderAmt) {
           value = maxOrderAmt;
           _warning = 'Sell amount was set to '
               '${cutTrailingZeros(value.toStringAsFixed(appConfig.tradeFormPrecision))} '
               '$_sellCoin, which is the max volume available for this price';
         }
 
-        _buyAmount = value * price;
+        _buyAmount = value / price;
       }
     }
 
@@ -137,18 +135,16 @@ class ConstructorProvider extends ChangeNotifier {
 
     if (value != null) {
       if (_matchingOrder != null) {
-        final Rational maxOrderAmt = _matchingOrder.maxVolume;
+        final Rational maxOrderAmt = _matchingOrder.maxBuyVolume;
         // if > than order max volume
-        if (value > maxOrderAmt) {
+        if (maxOrderAmt != null && value > maxOrderAmt) {
           value = maxOrderAmt;
           _warning = 'Buy amount was set to '
               '${cutTrailingZeros(value.toStringAsFixed(appConfig.tradeFormPrecision))} '
               '$_buyCoin, which is the max volume available for this price';
         }
 
-        final Rational price = _matchingOrder.action == Market.BUY
-            ? _matchingOrder.price
-            : _matchingOrder.price.inverse;
+        final Rational price = _matchingOrder.tradePrice;
 
         // if > than max sell balance
         if (value * price > maxSellAmt) {
@@ -180,6 +176,19 @@ class ConstructorProvider extends ChangeNotifier {
     if (coinBalance == null) return null;
 
     return deci2rat(coinBalance.balance.balance);
+  }
+
+  /// Percentage buttons start from the spendable wallet balance, then cap the
+  /// amount to the exact maker order selected by the user.
+  Rational sellAmountForPercentage(double pct) {
+    if (maxSellAmt == null) return null;
+
+    Rational amount = maxSellAmt *
+        Rational.parse('$pct') /
+        Rational.parse('100');
+    final Rational orderMax = _matchingOrder?.maxSellVolume;
+    if (orderMax != null && amount > orderMax) amount = orderMax;
+    return amount;
   }
 
   void onBuyAmtFieldChange(String newText) {
@@ -267,25 +276,62 @@ class ConstructorProvider extends ChangeNotifier {
   }
 
   Future<void> selectOrder(BestOrder order) async {
+    final Rational requestedSellAmount = _sellAmount;
+    final Rational requestedBuyAmount = _buyAmount;
     _matchingOrder = order;
 
+    Log('LCC_SIMPLE_SELECTED',
+        'uuid=${order.uuid} action=${order.action} '
+        'buy=${order.buyCoin} sell=${order.sellCoin} '
+        'rawPrice=${order.price} tradePrice=${order.tradePrice} '
+        'minBuy=${order.minBuyVolume} maxBuy=${order.maxBuyVolume} '
+        'minSell=${order.minSellVolume} maxSell=${order.maxSellVolume} '
+        'isMine=${order.isMine}');
+
     if (order.action == Market.BUY) {
-      sellCoin = order.otherCoin;
+      sellCoin = order.sellCoin;
       await _updateMaxTakerVolume();
+    } else {
+      buyCoin = order.buyCoin;
+    }
 
-      sellAmount = order.price * _buyAmount;
+    // Fixed-volume maker orders must use the exact rational values supplied
+    // by KDF. Recalculating through the visible amount and price introduces
+    // tiny rounding differences that make FillOrKill wait and expire.
+    final bool isFixedVolumeOrder =
+        order.minBuyVolume != null &&
+        order.maxBuyVolume != null &&
+        order.minSellVolume != null &&
+        order.maxSellVolume != null &&
+        order.minBuyVolume == order.maxBuyVolume &&
+        order.minSellVolume == order.maxSellVolume;
 
-      if (_buyAmount == order.maxVolume) {
+    if (isFixedVolumeOrder) {
+      _buyAmount = order.maxBuyVolume;
+      _sellAmount = order.maxSellVolume;
+      _warning = null;
+
+      Log('LCC_SIMPLE_FIXED_ORDER_EXACT',
+          'uuid=${order.uuid} buy=$_buyAmount sell=$_sellAmount '
+          'price=${order.tradePrice}');
+
+      notifyListeners();
+      await _updatePreimage();
+      return;
+    }
+
+    if (order.action == Market.BUY) {
+      buyAmount = requestedBuyAmount;
+
+      if (_buyAmount == order.maxBuyVolume) {
         _warning = 'Buy amount was set to '
             '${cutTrailingZeros(_buyAmount.toStringAsFixed(appConfig.tradeFormPrecision))} '
             '$_buyCoin, which is the max volume available for this price';
       }
     } else {
-      buyCoin = order.coin;
+      sellAmount = requestedSellAmount;
 
-      buyAmount = order.price * _sellAmount;
-
-      if (_sellAmount == order.maxVolume / order.price) {
+      if (_sellAmount == order.maxSellVolume) {
         _warning = 'Sell amount was set to '
             '${cutTrailingZeros(_sellAmount.toStringAsFixed(appConfig.tradeFormPrecision))} '
             '$_sellCoin, which is the max volume available for this price';
@@ -299,10 +345,17 @@ class ConstructorProvider extends ChangeNotifier {
     Function(dynamic) onSuccess,
     Function(dynamic) onError,
   }) async {
-    final Rational price = _matchingOrder.action == Market.SELL
-        ? _matchingOrder.price.inverse
-        : _matchingOrder.price;
+    final Rational price = _matchingOrder.tradePrice;
     final Rational volume = _buyAmount;
+
+    if (_matchingOrder.uuid == null || _matchingOrder.uuid.isEmpty) {
+      onError('The selected order has no UUID and cannot be matched safely.');
+      return;
+    }
+
+    Log('LCC_SIMPLE_POSTBUY',
+        'target=${_matchingOrder.uuid} base=$_buyCoin rel=$_sellCoin '
+        'volume=$volume price=$price sell=$_sellAmount');
 
     final dynamic re = await MM.postBuy(
       mmSe.client,
@@ -323,6 +376,9 @@ class ConstructorProvider extends ChangeNotifier {
       ),
     );
 
+    Log('LCC_SIMPLE_POSTBUY',
+        'responseType=${re.runtimeType} response=$re');
+
     if (re is BuyResponse) {
       onSuccess(re);
     } else {
@@ -335,8 +391,9 @@ class ConstructorProvider extends ChangeNotifier {
     // This code appears to remove orders placed by the current wallet
     // so that the user doesn't trade with themselves
     sorted.removeWhere((BestOrder order) {
-      final String coin =
-          order.action == Market.SELL ? order.coin : order.otherCoin;
+      if (order.isMine == true) return true;
+
+      final String coin = order.selectionCoin;
       final CoinBalance coinBalance = coinsBloc.getBalanceByAbbr(coin);
 
       // ZHTLC address is null (Shielded), so we can't check it.
@@ -347,11 +404,10 @@ class ConstructorProvider extends ChangeNotifier {
       return coinBalance.balance.address.toLowerCase() ==
           order.address.toLowerCase();
     });
-    if (type == Market.SELL) {
-      sorted.sort((a, b) => a.price.toDouble().compareTo(b.price.toDouble()));
-    } else {
-      sorted.sort((a, b) => b.price.toDouble().compareTo(a.price.toDouble()));
-    }
+    // Compare the normalized KDF buy price (sell per buy), not the raw
+    // best_orders orientation, which is reversed for action=SELL.
+    sorted.sort((a, b) =>
+        a.tradePrice.toDouble().compareTo(b.tradePrice.toDouble()));
     return sorted.isNotEmpty ? sorted[0] : null;
   }
 
@@ -378,53 +434,27 @@ class ConstructorProvider extends ChangeNotifier {
   }
 
   Future<void> _updateMatchingOrder() async {
+    // Keep the exact order explicitly selected by the user.
+    // Percentage buttons may change the requested volume, but must never
+    // replace the selected maker order with another order from the queue.
+    // KDF validates its availability when preimage/postBuy is executed.
     if (_matchingOrder == null) return;
-
-    final Market type =
-        _matchingOrder.action == Market.BUY ? Market.SELL : Market.BUY;
-
-    final BestOrders bestOrders = await getBestOrders(type);
-    if (bestOrders.error != null) return;
-
-    final String coin =
-        type == Market.SELL ? _matchingOrder?.otherCoin : _matchingOrder?.coin;
-
-    if (coin == null) return;
-    final BestOrder topOrder = getTickerTopOrder(bestOrders.result[coin], type);
-    if (topOrder == null) return;
-
-    if (topOrder.maxVolume == _matchingOrder.maxVolume &&
-        topOrder.price == _matchingOrder.price) return;
-
-    String warningMessage;
-
-    if (topOrder.price != _matchingOrder.price &&
-        topOrder.maxVolume != _matchingOrder.maxVolume) {
-      warningMessage = 'Warning: trade price and max volume was updated!';
-    } else if (topOrder.price != _matchingOrder.price) {
-      warningMessage = 'Warning: trade price was updated!';
-    } else if (topOrder.maxVolume != _matchingOrder.maxVolume) {
-      warningMessage = 'Warning: max trade volume was updated!';
-    }
-    _matchingOrder = topOrder;
-    sellAmount = _sellAmount; // recalculating sell and buy amounts
-
-    if (warningMessage != null) {
-      _warning = warningMessage;
-      notifyListeners();
-    }
   }
 
   Future<void> _updatePreimage() async {
     if (haveAllData) {
       inProgress = true;
+      Log('LCC_SIMPLE_PREIMAGE',
+          'target=${_matchingOrder.uuid} base=$_buyCoin rel=$_sellCoin '
+          'volume=$_buyAmount price=${_matchingOrder.tradePrice} '
+          'sell=$_sellAmount');
       final TradePreimage preimage = await MM.getTradePreimage2(
           GetTradePreimage2(
               swapMethod: 'buy',
               base: _buyCoin,
               rel: _sellCoin,
               volume: _buyAmount,
-              price: _sellAmount / _buyAmount));
+              price: _matchingOrder.tradePrice));
       inProgress = false;
 
       if (_validatePreimage(preimage)) {
@@ -459,22 +489,10 @@ class ConstructorProvider extends ChangeNotifier {
         }
       }
 
-      // if < than order min volume
-      final Rational minOrderVolume = _matchingOrder.minVolume;
-      if (minOrderVolume != null &&
-          _buyAmount != null &&
-          minOrderVolume > _buyAmount) {
-        isValid = false;
-        final Rational price = _matchingOrder.action == Market.SELL
-            ? _matchingOrder.price
-            : _matchingOrder.price.inverse;
-        final Rational minSellVolume = minOrderVolume / price;
-        _error = 'Min order volume is'
-            ' ${minSellVolume.toStringAsFixed(appConfig.tradeFormPrecision)}'
-            ' ${_matchingOrder.otherCoin}'
-            '\n(${minOrderVolume.toStringAsFixed(appConfig.tradeFormPrecision)}'
-            ' ${_matchingOrder.coin})';
-      }
+      // Do not reinterpret maker base_min_volume locally.
+      // Its denomination depends on the best_orders orientation and older
+      // mobile code can compare it against the opposite side of the pair.
+      // trade_preimage and postBuy validate the actual KDF minimum safely.
     }
 
     if (isValid) _error = null;

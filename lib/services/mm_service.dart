@@ -84,7 +84,7 @@ class MMService {
 
   /// Channel to native code.
   static MethodChannel nativeC = MethodChannel(
-      Platform.isAndroid ? 'com.komodoplatform.atomicdex/nativeC' : 'mm2');
+      Platform.isAndroid ? 'com.litecoincash.mobile/nativeC' : 'mm2');
 
   /// Log entries streamed from native code.
   /// MM log is coming that way on iOS.
@@ -348,7 +348,7 @@ class MMService {
     final String passphrase = await EncryptionTool().read('passphrase');
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final String os = Platform.isAndroid ? 'Android' : 'iOS';
-    gui = 'Komodo Wallet ${packageInfo.version} $os';
+    gui = 'LitecoinCash Wallet ${packageInfo.version} $os';
     if (Platform.isAndroid) {
       final buildTime = await nativeC.invokeMethod<int>('BUILD_TIME');
       gui += '; BT=${buildTime ~/ 1000}';
@@ -365,6 +365,12 @@ class MMService {
       dbdir: filesPath,
       allowWeakPassword: false,
       rpcPort: appConfig.rpcPort,
+      seednodes: [
+        'seed01.kmdefi.net',
+        'seed02.kmdefi.net',
+        'seed03.kmdefi.net',
+        'seed04.kmdefi.net',
+      ],
     ));
 
     logC
@@ -473,13 +479,11 @@ class MMService {
   /// A function to modify each loaded coin in the list of coins before it is
   /// passed to MM.
   Map<String, dynamic> coinModifier(Map<String, dynamic> coin) {
-    // Remove the check_point_block from ZHTLC coins because this is required
-    // if we want to activate ZHTLC coins and only sync from the current date.
-    // The check_point_block will be removed from the coin config repo in the
-    // future, so this is a temporary workaround.
     if (coin.containsKey('protocol') &&
+        coin['protocol'] is Map &&
         coin['protocol'].containsKey('type') &&
         coin['protocol']['type'] == 'ZHTLC' &&
+        coin['protocol']['protocol_data'] is Map &&
         coin['protocol']['protocol_data'].containsKey('check_point_block')) {
       coin['protocol']['protocol_data'].remove('check_point_block');
     }

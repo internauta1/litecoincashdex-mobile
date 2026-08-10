@@ -70,6 +70,10 @@ class OrderBookProvider extends ChangeNotifier {
 
   void updateActivePair() => syncOrderbook.updateActivePair();
 
+  /// Refresh subscribed and funded orderbooks after Android resumes.
+  Future<void> refreshAfterResume() async =>
+      await syncOrderbook.fullOrderbookUpdate();
+
   // todo(AG): historical swap data for [coinsPair]
   List<Swap> getSwapHistory(CoinsPair coinsPair) {
     if (coinsPair.sell.abbr.startsWith('VOTE') ||

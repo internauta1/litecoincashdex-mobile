@@ -73,8 +73,8 @@ class TradeForm {
           Rational.parse(matchingBid.maxvolume.toString());
 
       // If greater than matching bid max receive volume
-      if (amount >= (bidVolume * bidPrice)) {
-        amount = bidVolume * bidPrice;
+      if (amount >= bidVolume) {
+        amount = bidVolume;
         swapBloc.setIsMaxActive(false);
         swapBloc.shouldBuyOut = true;
       } else {
@@ -148,15 +148,17 @@ class TradeForm {
     final Rational price = fract2rat(swapBloc.matchingBid.priceFract) ??
         Rational.parse(swapBloc.matchingBid.price);
 
-    Rational volume;
-    if (swapBloc.shouldBuyOut) {
-      volume = fract2rat(swapBloc.matchingBid.maxvolumeFract) ??
-          Rational.parse(swapBloc.matchingBid.maxvolume.toString());
-    } else if (swapBloc.isSellMaxActive && swapBloc.maxTakerVolume != null) {
-      volume = swapBloc.maxTakerVolume / price;
-    } else {
-      volume = swapBloc.amountReceive;
-    }
+    // KDF buy.volume must be expressed in the base/receive coin.
+    // amountReceive already contains the correctly capped selected-order amount.
+    final Rational volume = swapBloc.amountReceive;
+
+    Log('LCC_POSTBUY_VOLUME',
+        'base=${swapBloc.receiveCoinBalance.coin.abbr} '
+        'rel=${swapBloc.sellCoinBalance.coin.abbr} '
+        'sell=${swapBloc.amountSell} '
+        'receive=${swapBloc.amountReceive} '
+        'volume=$volume price=$price '
+        'buyOut=${swapBloc.shouldBuyOut}');
 
     final dynamic re = await MM.postBuy(
       mmSe.client,

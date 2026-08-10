@@ -1164,7 +1164,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Перезапустіть додаток, щоб повторити спробу, або натисніть кнопку нижче."),
         "portfolio": MessageLookupByLibrary.simpleMessage("Портфоліо"),
         "poweredOnKmd":
-            MessageLookupByLibrary.simpleMessage("Powered by Komodo"),
+            MessageLookupByLibrary.simpleMessage("Powered by Litecoin Cash"),
         "price": MessageLookupByLibrary.simpleMessage("ціна"),
         "privateKey": MessageLookupByLibrary.simpleMessage("Приватний ключ"),
         "privateKeys": MessageLookupByLibrary.simpleMessage("Приватні ключі"),
@@ -1194,7 +1194,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "question_8": m90,
         "question_9": m91,
         "rebrandingAnnouncement": MessageLookupByLibrary.simpleMessage(
-            "Це нова ера! Ми офіційно змінили назву з \"AtomicDEX\" на \"Komodo Wallet\""),
+            "Це нова ера! Ми офіційно змінили назву з \"Litecoin Cash DEX\" на \"Litecoin Cash Wallet\""),
         "receive": MessageLookupByLibrary.simpleMessage("ОТРИМАТИ"),
         "receiveLower": MessageLookupByLibrary.simpleMessage("Отримати"),
         "recommendSeedMessage": MessageLookupByLibrary.simpleMessage(

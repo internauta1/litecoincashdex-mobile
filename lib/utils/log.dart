@@ -141,7 +141,7 @@ class Log {
 
       await Log.appendRawLog('\n\n--- / my recent swaps ---\n\n');
       // TBD: Replace these with a pretty-printed metrics JSON
-      await Log.appendRawLog('Komodo Wallet ${packageInfo.version} $os\n');
+      await Log.appendRawLog('Litecoin Cash Wallet ${packageInfo.version} $os\n');
       await Log.appendRawLog(
           'mm_version ${mmSe.mmVersion} mm_date ${mmSe.mmDate}\n');
       await Log.appendRawLog('netid ${mmSe.netid}\n');
@@ -150,6 +150,7 @@ class Log {
       await Log.appendRawLog('Error saving swaps for log export: $ex');
     }
 
+    await LogStorage().closeLogFile();
     // Discord attachment size limit is about 25 MiB
     final exportedLogFiles =
         (await LogStorage().exportLogs()).map((f) => XFile(f.path)).toList();
@@ -162,7 +163,7 @@ class Log {
     await Share.shareXFiles(
       exportedLogFiles,
       // mimeTypes: ['application/octet-stream'],
-      subject: 'Komodo Wallet Logs at ${DateTime.now().toIso8601String()}',
+      subject: 'Litecoin Cash Wallet Logs at ${DateTime.now().toIso8601String()}',
     );
   }
 }

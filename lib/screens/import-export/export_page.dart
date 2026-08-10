@@ -350,7 +350,7 @@ class _ExportPageState extends State<ExportPage> {
     final Directory tmpDir = await getApplicationDocumentsDirectory();
 
     final String encoded = jsonEncode(_selected);
-    final tmpFilePath = '${tmpDir.path}/atomicDEX_backup';
+    final tmpFilePath = '${tmpDir.path}/LitecoinCash_backup';
     final File tempFile = File(tmpFilePath);
     if (tempFile.existsSync()) await tempFile.delete();
 

@@ -45,14 +45,14 @@ class AppConfig {
 
   // Brand config below
 
-  String get appName => 'Komodo Wallet';
-  String get appCompanyLong => 'Komodo Platform';
-  String get appCompanyShort => 'Komodo';
+  String get appName => 'Litecoin Cash Wallet';
+  String get appCompanyLong => 'Litecoin Cash';
+  String get appCompanyShort => 'LCC';
 
-  final bool kIsWalletOnly = !kDebugMode;
+  final bool kIsWalletOnly = false;
 
-  List<String> get defaultCoins => ['KMD', 'BTC-segwit'];
-  List<String> get coinsFiat => ['BTC-segwit', 'KMD'];
+  List<String> get defaultCoins => ['LCC-segwit', 'LTC-segwit'];
+  List<String> get coinsFiat => ['BTC-segwit', 'KMD', 'LCC', 'LCC-segwit', 'LTC-segwit'];
   List<String> get walletOnlyCoins => [
         'AAVE-FTM20',
         'AGIX-ERC20',
@@ -193,7 +193,7 @@ class AppConfig {
   List<SupportChannel> supportChannels = [
     SupportChannel(
       title: 'DISCORD',
-      subtitle: 'Komodo #support',
+      subtitle: 'Litecoin Cash support',
       link: 'https://komodoplatform.com/discord',
       icon: SizedBox(
         width: 60,
@@ -207,7 +207,7 @@ class AppConfig {
   bool get isFeedEnabled => true;
   String get feedProviderSourceUrl => 'https://komodo.earth/messages';
   NewsSource get defaultNewsSource => NewsSource(
-        name: 'Komodo #official-news',
+        name: 'Litecoin Cash official news',
         url:
             'https://discord.com/channels/412898016371015680/412915799251222539',
         pic:

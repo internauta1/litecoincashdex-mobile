@@ -211,7 +211,7 @@ class _CoinSelectState extends State<CoinSelect> {
                   children: <Widget>[
                     PhotoHero(
                       radius: widget.compact ? 8 : 12,
-                      tag: getCoinIconPath(coinBalance.balance.coin),
+                      tag: getCoinIconPath(coinBalance.coin.abbr),
                     ),
                     SizedBox(width: widget.compact ? 6 : 8),
                     Text(
@@ -257,7 +257,7 @@ class _CoinSelectState extends State<CoinSelect> {
                   children: <Widget>[
                     PhotoHero(
                       radius: widget.compact ? 8 : 12,
-                      tag: getCoinIconPath(coinBalance.balance.coin),
+                      tag: getCoinIconPath(coinBalance.coin.abbr),
                     ),
                     SizedBox(width: widget.compact ? 6 : 8),
                     Text(
@@ -285,7 +285,7 @@ class _CoinSelectState extends State<CoinSelect> {
               children: <Widget>[
                 PhotoHero(
                   radius: widget.compact ? 8 : 12,
-                  tag: getCoinIconPath(coinBalance.balance.coin),
+                  tag: getCoinIconPath(coinBalance.coin.abbr),
                 ),
                 SizedBox(width: widget.compact ? 6 : 8),
                 Text(
@@ -380,7 +380,16 @@ class _CoinSelectState extends State<CoinSelect> {
       padding: EdgeInsets.symmetric(vertical: widget.compact ? 3 : 6),
       child: Row(
         children: <Widget>[
-          Expanded(child: _optionTitle),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: _optionTitle,
+              ),
+            ),
+          ),
           _buildCandlesIcon(),
           const SizedBox(width: 2),
           _bildOrdersNumber(),

@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final configMm2 = configMm2FromJson(jsonString);
-
 import 'dart:convert';
 
 ConfigMm2 configMm2FromJson(String str) => ConfigMm2.fromJson(json.decode(str));
@@ -20,6 +16,7 @@ class ConfigMm2 {
     this.dbdir,
     this.allowWeakPassword = false,
     this.rpcPort,
+    this.seednodes,
   });
 
   factory ConfigMm2.fromJson(Map<String, dynamic> json) => ConfigMm2(
@@ -33,6 +30,9 @@ class ConfigMm2 {
         dbdir: json['dbdir'],
         allowWeakPassword: json['allow_weak_password'] ?? false,
         rpcPort: json['rpcport'],
+        seednodes: json['seednodes'] == null
+            ? null
+            : List<String>.from(json['seednodes']),
       );
 
   String gui;
@@ -45,6 +45,7 @@ class ConfigMm2 {
   String dbdir;
   bool allowWeakPassword;
   int rpcPort;
+  List<String> seednodes;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'gui': gui,
@@ -57,5 +58,6 @@ class ConfigMm2 {
         'dbdir': dbdir,
         'allow_weak_password': allowWeakPassword,
         if (rpcPort != null) 'rpcport': rpcPort,
+        if (seednodes != null) 'seednodes': seednodes,
       };
 }

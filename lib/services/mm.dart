@@ -227,9 +227,9 @@ class ApiProvider {
       'userpass': mmSe.userpass,
       'coin': coin.abbr,
       'servers': Coin.getServerList(coin.serverList),
-      // limit the number of active connections to electrum servers to 1 to
-      // reduce device load & request spamming
-      'max_connected': 1,
+      // Keep two active Electrum connections so one server failure does not
+      // interrupt balances, fee estimation or an active atomic swap.
+      'max_connected': 2,
       'mm2': coin.mm2,
       'tx_history': true,
       'required_confirmations': coin.requiredConfirmations,
@@ -426,6 +426,51 @@ class ApiProvider {
     }
   }
 
+  /// Returns the number of directly connected KDF/libp2p peers.
+  /// A null result means that the diagnostic RPC failed or returned an
+  /// unexpected response; it must never be interpreted as zero peers.
+  Future<int> getDirectlyConnectedPeersCount([http.Client client]) async {
+    client ??= mmSe.client;
+
+    try {
+      final Response response = await client.post(
+        Uri.parse(url),
+        body: json.encode(<String, dynamic>{
+          'userpass': mmSe.userpass,
+          'method': 'get_directly_connected_peers',
+        }),
+      );
+
+      _assert200(response);
+      _logRes('getDirectlyConnectedPeersCount', response);
+
+      final dynamic decoded = json.decode(response.body);
+      final dynamic result =
+          decoded is Map<String, dynamic> ? decoded['result'] : null;
+
+      if (result is List) return result.length;
+
+      if (result is Map) {
+        for (final String key in <String>[
+          'peers',
+          'connected_peers',
+          'directly_connected_peers',
+        ]) {
+          final dynamic peers = result[key];
+          if (peers is List) return peers.length;
+        }
+      }
+
+      Log('MM_P2P_RESUME',
+          'Unexpected get_directly_connected_peers response: ${response.body}');
+      return null;
+    } catch (e) {
+      Log('MM_P2P_RESUME',
+          'get_directly_connected_peers failed: $e');
+      return null;
+    }
+  }
+
   Future<dynamic> getMyOrders(
     http.Client client,
     BaseService body,
@@ -456,6 +501,7 @@ class ApiProvider {
               (Response r) => _logRes('getOrderbook_api_providers:110', r),
             )
             .then<dynamic>((Response res) {
+            Log('MM_ORDERBOOK_RAW', res.body);
           _assert200(res);
           return orderbookFromJson(
             json.encode(json.decode(res.body)['result']),

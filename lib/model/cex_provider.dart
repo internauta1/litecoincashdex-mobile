@@ -550,29 +550,77 @@ class CexPrices {
   }
 
   Future<void> updatePrices([List<Coin> coinsList]) async {
-    // All available coins, inculding not active.
     final List<Coin> allCoins = (await coins).values.toList();
-    final List<String> ids =
-        allCoins.map((Coin coin) => coin.coingeckoId).toList();
 
-    for (String abbr in currencies) {
-      if (ids.contains(abbr)) continue;
+    // Respect the active coin list supplied by CoinsBloc. The old code ignored
+    // this argument and requested every configured CoinGecko ID every minute,
+    // causing oversized requests and HTTP 429 rate limiting.
+    List<Coin> requestedCoins = coinsList;
+    requestedCoins ??= await coinsBloc.electrumCoins();
 
-      final Coin coin =
-          allCoins.firstWhere((Coin c) => c.abbr == abbr, orElse: () => null);
-      if (coin == null) continue;
+    final Set<String> ids = <String>{};
 
-      ids.add(coin.coingeckoId);
+    for (final Coin coin in requestedCoins ?? <Coin>[]) {
+      final String id = coin?.coingeckoId?.trim();
+      if (id != null && id.isNotEmpty) ids.add(id);
     }
 
-    final String mainUrl = appConfig.cryptoPricesEndpoint;
-    final String fallbackUrl =
-        appConfig.cryptoPricesFallback + ids.join(',') + '&vs_currencies=usd';
+    // Also retain prices used as selectable display currencies.
+    for (final String abbr in currencies ?? <String>[]) {
+      final Coin coin = allCoins.firstWhere(
+        (Coin item) => item.abbr == abbr,
+        orElse: () => null,
+      );
 
-    bool fetched = await _fetchPrices(mainUrl);
-    if (!fetched) fetched = await _fetchFallbackPrices(fallbackUrl);
+      final String id = coin?.coingeckoId?.trim();
+      if (id != null && id.isNotEmpty) ids.add(id);
+    }
+
+    if (ids.isEmpty) {
+      Log('cex_provider', 'No active CoinGecko IDs to update');
+      return;
+    }
+
+    bool fetched = await _fetchPrices(appConfig.cryptoPricesEndpoint);
+
+    if (!fetched) {
+      final List<String> uniqueIds = ids.toList();
+      const int batchSize = 80;
+
+      Log(
+        'cex_provider',
+        'Using CoinGecko fallback for ${uniqueIds.length} unique active IDs',
+      );
+
+      bool fallbackFetched = false;
+
+      for (int start = 0; start < uniqueIds.length; start += batchSize) {
+        final int end = start + batchSize < uniqueIds.length
+            ? start + batchSize
+            : uniqueIds.length;
+
+        final List<String> batch = uniqueIds.sublist(start, end);
+        final String fallbackUrl = appConfig.cryptoPricesFallback +
+            batch.join(',') +
+            '&vs_currencies=usd';
+
+        final bool batchFetched = await _fetchFallbackPrices(fallbackUrl);
+
+        fallbackFetched = batchFetched || fallbackFetched;
+
+        // Stop after an API/rate-limit failure. Existing valid prices remain
+        // cached and a later scheduled update can retry safely.
+        if (!batchFetched) break;
+
+        if (end < uniqueIds.length) {
+          await Future<void>.delayed(const Duration(seconds: 5));
+        }
+      }
+
+      fetched = fallbackFetched;
+    }
+
     if (!fetched) return;
-
     _notifyListeners();
   }
 
@@ -604,7 +652,7 @@ class CexPrices {
     Map<String, dynamic> json;
 
     try {
-      final isJsonString = _body.startsWith('{');
+      final isJsonString = _body != null && _body.startsWith('{');
       json = isJsonString ? jsonDecode(_body) : null;
     } catch (e) {
       Log('cex_provider', 'Failed to parse prices json: $e');

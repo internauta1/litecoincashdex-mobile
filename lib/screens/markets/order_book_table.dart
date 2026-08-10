@@ -337,79 +337,66 @@ class _OrderBookTableState extends State<OrderBookTable> {
 
   TableRow _buildCexRate() {
     final double cexRate = cexProvider.getCexRate() ?? 0.0;
+    final Color markerColor = Theme.of(context).brightness == Brightness.light
+        ? cexColorLight
+        : cexColor;
 
     return TableRow(
       children: [
         cexRate > 0
             ? SizedBox(
                 height: 26,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: <Widget>[
-                    Positioned(
-                      top: 0,
-                      bottom: 0,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.light
-                                  ? cexColorLight.withAlpha(50)
-                                  : cexColor.withAlpha(50),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(4)),
-                            ),
-                            padding: const EdgeInsets.only(
-                              left: 4,
-                              right: 4,
-                              top: 2,
-                              bottom: 2,
-                            ),
-                            child: Row(
-                              children: <Widget>[
-                                Text(
-                                  formatPrice(cexRate),
-                                  maxLines: 1,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w100,
-                                      ),
-                                ),
-                                const SizedBox(
-                                  width: 2,
-                                ),
-                                CexMarker(
-                                  context,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.light
-                                      ? cexColorLight
-                                      : cexColor,
-                                  size: const Size.fromHeight(12),
-                                ),
-                              ],
-                            ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                          decoration: BoxDecoration(
+                            color: markerColor.withAlpha(50),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(4)),
                           ),
-                          const SizedBox(
-                            width: 2,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                formatPrice(cexRate),
+                                maxLines: 1,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                              ),
+                              const SizedBox(width: 2),
+                              CexMarker(
+                                context,
+                                color: markerColor,
+                                size: const Size.fromHeight(12),
+                              ),
+                            ],
                           ),
-                          Text(
-                            '≈ ${cexProvider.convert(cexRate, from: orderBookProvider.activePair.buy.abbr)}',
-                            style: TextStyle(
-                                color: Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? cexColorLight
-                                    : cexColor,
-                                fontSize: 14),
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '\u2248 ${cexProvider.convert(cexRate, from: orderBookProvider.activePair.buy.abbr)}',
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: markerColor,
+                            fontSize: 14,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               )
             : SizedBox(),

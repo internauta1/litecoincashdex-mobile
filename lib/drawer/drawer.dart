@@ -57,19 +57,26 @@ class _AppDrawerState extends State<AppDrawer> {
                     begin: Alignment.centerRight,
                     stops: <double>[0.01, 1],
                     colors: <Color>[
-                      Color.fromRGBO(98, 90, 229, 1),
-                      Color.fromRGBO(45, 184, 240, 1),
+                      Color(0xFF007A3D),
+                      Color(0xFF00A651),
                     ],
                   ),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Flexible(
+                    const Flexible(
                       flex: 5,
-                      child: SvgPicture.asset(
-                        'assets/branding/svg/mark_and_text_vertical_white.svg',
-                        color: Colors.white,
+                      child: Center(
+                        child: Text(
+                          'Litecoin Cash Wallet',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     Padding(
