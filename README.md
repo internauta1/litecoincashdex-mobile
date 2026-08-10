@@ -1,5 +1,9 @@
 # Litecoin Cash DEX Mobile
 
+<p align="center">
+  <img src="assets/branding/logo_app.png" alt="Litecoin Cash DEX Mobile logo" width="150">
+</p>
+
 Community-maintained, non-custodial Litecoin Cash wallet and decentralized exchange for Android.
 
 - Website: [litecoincash.com.br](https://litecoincash.com.br)
