@@ -54,32 +54,68 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Create MM2 directories
+      - name: Download compatible MM2 Android libraries
+        shell: bash
         run: |
+          set -euo pipefail
+
           mkdir -p android/app/src/main/cpp/libs/armeabi-v7a
           mkdir -p android/app/src/main/cpp/libs/arm64-v8a
 
-      - name: Download MM2 ARMv7
-        run: |
           curl -fL --retry 3 \
-            --header "${{ secrets.MM2_DOWNLOAD_HEADER }}" \
-            "https://gitlab.com/api/v4/projects/11069706/jobs/artifacts/mm2.1/raw/target/armv7-linux-androideabi/release/libmm2.a?job=android-armv7" \
-            --output "android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a"
+            "https://github.com/KomodoPlatform/komodo-defi-framework/releases/download/v1.0.7-beta/mm2-79f620559-android-armv7-CI.zip" \
+            -o /tmp/mm2-armv7.zip
 
-      - name: Download MM2 ARM64
-        run: |
           curl -fL --retry 3 \
-            --header "${{ secrets.MM2_DOWNLOAD_HEADER }}" \
-            "https://gitlab.com/api/v4/projects/11069706/jobs/artifacts/mm2.1/raw/target/aarch64-linux-android/release/libmm2.a?job=android-aarch64" \
-            --output "android/app/src/main/cpp/libs/arm64-v8a/libmm2.a"
+            "https://github.com/KomodoPlatform/komodo-defi-framework/releases/download/v1.0.7-beta/mm2-79f620559-android-aarch64-CI.zip" \
+            -o /tmp/mm2-arm64.zip
+
+          echo "698ac14b0f50d1695529640644c4c3117af7c5ee7e1f1c2dae92f985fd100691  /tmp/mm2-armv7.zip" \
+            | sha256sum -c -
+
+          echo "d9febb4d1427352d4b8eac5cabe12ee8bcfd98ee6a5f91d18eed223fc7b0a612  /tmp/mm2-arm64.zip" \
+            | sha256sum -c -
+
+          ARMV7_FILE="$(
+            unzip -Z1 /tmp/mm2-armv7.zip |
+            grep -E '(^|/)libmm2\.a$' |
+            head -1
+          )"
+
+          ARM64_FILE="$(
+            unzip -Z1 /tmp/mm2-arm64.zip |
+            grep -E '(^|/)libmm2\.a$' |
+            head -1
+          )"
+
+          test -n "$ARMV7_FILE"
+          test -n "$ARM64_FILE"
+
+          unzip -p /tmp/mm2-armv7.zip "$ARMV7_FILE" \
+            > android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
+
+          unzip -p /tmp/mm2-arm64.zip "$ARM64_FILE" \
+            > android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
+
+          test -s android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
+          test -s android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
+
+          ls -lh \
+            android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
+            android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
 
       - name: Create API binaries directory
         run: mkdir -p build/api-binaries
 
       - name: Copy API binaries
         run: |
-          cp android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a build/api-binaries/libmm2-armeabi-v7a.a
-          cp android/app/src/main/cpp/libs/arm64-v8a/libmm2.a build/api-binaries/libmm2-arm64-v8a.a
+          cp \
+            android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
+            build/api-binaries/libmm2-armeabi-v7a.a
+
+          cp \
+            android/app/src/main/cpp/libs/arm64-v8a/libmm2.a \
+            build/api-binaries/libmm2-arm64-v8a.a
 
       - name: Upload API binaries
         uses: actions/upload-artifact@v4
