@@ -3,10 +3,7 @@ name: Build Komodo Wallet
 on:
   workflow_dispatch:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - main
@@ -17,9 +14,117 @@ permissions:
   contents: read
 
 jobs:
+  build-mm2:
+    name: Build MM2 Android libraries
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container: komodoofficial/ci-container:latest
+
+    steps:
+      - name: Checkout Komodo DeFi Framework
+        uses: actions/checkout@v4
+        with:
+          repository: KomodoPlatform/komodo-defi-framework
+          ref: v1.0.7-beta
+          path: kdf
+
+      - name: Configure build environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/kdf"
+          echo "/bin" >> "$GITHUB_PATH"
+          echo "/usr/bin" >> "$GITHUB_PATH"
+          echo "/root/.cargo/bin" >> "$GITHUB_PATH"
+
+          rustup toolchain install nightly-2022-10-29 \
+            --no-self-update \
+            --profile minimal
+          rustup default nightly-2022-10-29
+          rustup target add aarch64-linux-android
+          rustup target add armv7-linux-androideabi
+
+          cd kdf
+          ./scripts/ci/android-ndk.sh x86 21
+
+      - name: Build MM2 for ARM64 and ARMv7
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd kdf
+
+          COMMIT_HASH="$(git rev-parse --short=7 HEAD)"
+          rm -f MM_VERSION
+          printf '%s\n' "$COMMIT_HASH" > MM_VERSION
+
+          export PATH="$PATH:/android-ndk/bin"
+
+          CC_aarch64_linux_android=aarch64-linux-android21-clang \
+          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=aarch64-linux-android21-clang \
+          cargo rustc \
+            --target=aarch64-linux-android \
+            --lib \
+            --release \
+            --crate-type=staticlib \
+            --package mm2_bin_lib
+
+          CC_armv7_linux_androideabi=armv7a-linux-androideabi21-clang \
+          CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER=armv7a-linux-androideabi21-clang \
+          cargo rustc \
+            --target=armv7-linux-androideabi \
+            --lib \
+            --release \
+            --crate-type=staticlib \
+            --package mm2_bin_lib
+
+          mkdir -p ../mm2-libs/arm64-v8a
+          mkdir -p ../mm2-libs/armeabi-v7a
+
+          cp \
+            target/aarch64-linux-android/release/libmm2lib.a \
+            ../mm2-libs/arm64-v8a/libmm2.a
+
+          cp \
+            target/armv7-linux-androideabi/release/libmm2lib.a \
+            ../mm2-libs/armeabi-v7a/libmm2.a
+
+      - name: Verify required native symbols
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for library in \
+            mm2-libs/arm64-v8a/libmm2.a \
+            mm2-libs/armeabi-v7a/libmm2.a
+          do
+            echo "Checking $library"
+            file "$library"
+            nm -g --defined-only "$library" > /tmp/mm2-symbols.txt
+
+            for symbol in mm2_main mm2_main_status mm2_stop
+            do
+              if grep -qE "[[:space:]]${symbol}$" /tmp/mm2-symbols.txt; then
+                echo "OK: $symbol"
+              else
+                echo "ERROR: missing $symbol in $library"
+                exit 1
+              fi
+            done
+          done
+
+      - name: Upload MM2 Android libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: mm2-android-libraries
+          path: mm2-libs/
+          if-no-files-found: error
+          retention-days: 7
+
   build-android:
     name: Build Android APK
+    needs: build-mm2
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Workaround git protocol error
@@ -27,7 +132,7 @@ jobs:
         run: |
           echo -e '[url "https://github.com/"]\n  insteadOf = "git://github.com/"' >> ~/.gitconfig
 
-      - name: Checkout the code
+      - name: Checkout wallet code
         uses: actions/checkout@v4
 
       - name: Set up Java 17 for Android SDK
@@ -58,94 +163,31 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Download compatible MM2 Android libraries
+      - name: Download MM2 Android libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: mm2-android-libraries
+          path: android/app/src/main/cpp/libs
+
+      - name: Verify downloaded libraries
         shell: bash
         run: |
           set -euo pipefail
 
-          mkdir -p android/app/src/main/cpp/libs/armeabi-v7a
-          mkdir -p android/app/src/main/cpp/libs/arm64-v8a
-
-          curl -fL --retry 3 \
-            "https://github.com/KomodoPlatform/komodo-defi-framework/releases/download/v1.0.7-beta/mm2-79f620559-android-armv7-CI.zip" \
-            -o /tmp/mm2-armv7.zip
-
-          curl -fL --retry 3 \
-            "https://github.com/KomodoPlatform/komodo-defi-framework/releases/download/v1.0.7-beta/mm2-79f620559-android-aarch64-CI.zip" \
-            -o /tmp/mm2-arm64.zip
-
-          echo "698ac14b0f50d1695529640644c4c3117af7c5ee7e1f1c2dae92f985fd100691  /tmp/mm2-armv7.zip" \
-            | sha256sum -c -
-
-          echo "d9febb4d1427352d4b8eac5cabe12ee8bcfd98ee6a5f91d18eed223fc7b0a612  /tmp/mm2-arm64.zip" \
-            | sha256sum -c -
-
-          ARMV7_FILE="$(
-            unzip -Z1 /tmp/mm2-armv7.zip |
-            grep -E '(^|/)libmm2\.a$' |
-            head -1
-          )"
-
-          ARM64_FILE="$(
-            unzip -Z1 /tmp/mm2-arm64.zip |
-            grep -E '(^|/)libmm2\.a$' |
-            head -1
-          )"
-
-          test -n "$ARMV7_FILE"
-          test -n "$ARM64_FILE"
-
-          unzip -p /tmp/mm2-armv7.zip "$ARMV7_FILE" \
-            > android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
-
-          unzip -p /tmp/mm2-arm64.zip "$ARM64_FILE" \
-            > android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
-
-          test -s android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
-          test -s android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
-
-          ls -lh \
-            android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
-            android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
-
-      - name: Inspect MM2 native symbols
-        shell: bash
-        run: |
-          set -o pipefail
-
-          echo "=== ARMv7 file ==="
-          file android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
-
-          echo "=== ARMv7 MM2/KDF symbols ==="
-          nm -g --defined-only \
-            android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
-            2>/dev/null |
-            grep -E 'mm2_|kdf_' |
-            sort -u |
-            head -100 || true
-
-          echo "=== ARM64 file ==="
-          file android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
-
-          echo "=== ARM64 MM2/KDF symbols ==="
-          nm -g --defined-only \
+          for library in \
             android/app/src/main/cpp/libs/arm64-v8a/libmm2.a \
-            2>/dev/null |
-            grep -E 'mm2_|kdf_' |
-            sort -u |
-            head -100 || true
+            android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
+          do
+            test -s "$library"
+            nm -g --defined-only "$library" > /tmp/mm2-symbols.txt
 
-          echo "=== Required symbols ==="
-
-          for symbol in mm2_main mm2_main_status mm2_stop; do
-            if nm -g --defined-only \
-              android/app/src/main/cpp/libs/arm64-v8a/libmm2.a \
-              2>/dev/null |
-              grep -qE "[[:space:]]${symbol}$"; then
-              echo "OK: $symbol"
-            else
-              echo "MISSING: $symbol"
-            fi
+            for symbol in mm2_main mm2_main_status mm2_stop
+            do
+              grep -qE "[[:space:]]${symbol}$" /tmp/mm2-symbols.txt || {
+                echo "ERROR: missing $symbol in $library"
+                exit 1
+              }
+            done
           done
 
       - name: Create API binaries directory
