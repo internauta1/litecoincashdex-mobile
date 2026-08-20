@@ -1,69 +1,104 @@
 name: Build Komodo Wallet
+
 on:
+  workflow_dispatch:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [opened, synchronize, reopened]
   push:
     branches:
-      - master
+      - main
   schedule:
     - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
 
 jobs:
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
+
     steps:
-      # Common setup
-      # TODO: Remove workaround at some future point
       - name: Workaround git protocol error
-        run: echo -e '[url "https://github.com/"]\n  insteadOf = "git://github.com/"' >> ~/.gitconfig
+        run: |
+          echo -e '[url "https://github.com/"]\n  insteadOf = "git://github.com/"' >> ~/.gitconfig
+
       - name: Checkout the code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Set up Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '11'
+
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
+
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '2.8.1'
           architecture: x64
           cache: true
+
       - name: Get dependencies
         run: flutter pub get --suppress-analytics
-      # extra Gradle caching
+
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2.4.2
-      # mm2 lib download
-      - run: mkdir -p android/app/src/main/cpp/libs/{armeabi-v7a,arm64-v8a}
-      - run: curl -l --header ${{ secrets.MM2_DOWNLOAD_HEADER }} "https://gitlab.com/api/v4/projects/11069706/jobs/artifacts/mm2.1-cross/raw/target/armv7-linux-androideabi/release/libmm2.a?job=android-armv7" --output "android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a"
-      - run: curl -l --header ${{ secrets.MM2_DOWNLOAD_HEADER }} "https://gitlab.com/api/v4/projects/11069706/jobs/artifacts/mm2.1-cross/raw/target/aarch64-linux-android/release/libmm2.a?job=android-aarch64" --output "android/app/src/main/cpp/libs/arm64-v8a/libmm2.a"
-      # Save API binaries
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Create MM2 directories
+        run: |
+          mkdir -p android/app/src/main/cpp/libs/armeabi-v7a
+          mkdir -p android/app/src/main/cpp/libs/arm64-v8a
+
+      - name: Download MM2 ARMv7 library
+        run: |
+          curl -fL --retry 3 \
+            --header "${{ secrets.MM2_DOWNLOAD_HEADER }}" \
+            "https://gitlab.com/api/v4/projects/11069706/jobs/artifacts/mm2.1-cross/raw/target/armv7-linux-androideabi/release/libmm2.a?job=android-armv7" \
+            --output android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
+
+      - name: Download MM2 ARM64 library
+        run: |
+          curl -fL --retry 3 \
+            --header "${{ secrets.MM2_DOWNLOAD_HEADER }}" \
+            "https://gitlab.com/api/v4/projects/11069706/jobs/artifacts/mm2.1-cross/raw/target/aarch64-linux-android/release/libmm2.a?job=android-aarch64" \
+            --output android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
+
       - name: Create API binaries directory
-        run: mkdir -p build/api-binaries/
+        run: mkdir -p build/api-binaries
+
       - name: Copy API binaries
         run: |
           cp android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a build/api-binaries/libmm2-armeabi-v7a.a
           cp android/app/src/main/cpp/libs/arm64-v8a/libmm2.a build/api-binaries/libmm2-arm64-v8a.a
-      # Upload API binaries
+
       - name: Upload API binaries
         uses: actions/upload-artifact@v4
         with:
           name: api-binaries
           path: build/api-binaries/
-      # APK build
+          if-no-files-found: error
+
       - name: Build release APK
-        run: flutter build apk --release --obfuscate --split-debug-info=build/debug-info/
+        run: |
+          flutter build apk \
+            --release \
+            --obfuscate \
+            --split-debug-info=build/debug-info/
+
       - name: Save generated APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
       - name: Save debug info
         uses: actions/upload-artifact@v4
         with:
           name: android-debug-info
           path: build/debug-info/
+          if-no-files-found: error
