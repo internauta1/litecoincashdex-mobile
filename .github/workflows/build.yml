@@ -3,7 +3,10 @@ name: Build Komodo Wallet
 on:
   workflow_dispatch:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types:
+      - opened
+      - synchronize
+      - reopened
   push:
     branches:
       - main
@@ -20,6 +23,7 @@ jobs:
 
     steps:
       - name: Workaround git protocol error
+        shell: bash
         run: |
           echo -e '[url "https://github.com/"]\n  insteadOf = "git://github.com/"' >> ~/.gitconfig
 
@@ -104,10 +108,51 @@ jobs:
             android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
             android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
 
+      - name: Inspect MM2 native symbols
+        shell: bash
+        run: |
+          set -o pipefail
+
+          echo "=== ARMv7 file ==="
+          file android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a
+
+          echo "=== ARMv7 MM2/KDF symbols ==="
+          nm -g --defined-only \
+            android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
+            2>/dev/null |
+            grep -E 'mm2_|kdf_' |
+            sort -u |
+            head -100 || true
+
+          echo "=== ARM64 file ==="
+          file android/app/src/main/cpp/libs/arm64-v8a/libmm2.a
+
+          echo "=== ARM64 MM2/KDF symbols ==="
+          nm -g --defined-only \
+            android/app/src/main/cpp/libs/arm64-v8a/libmm2.a \
+            2>/dev/null |
+            grep -E 'mm2_|kdf_' |
+            sort -u |
+            head -100 || true
+
+          echo "=== Required symbols ==="
+
+          for symbol in mm2_main mm2_main_status mm2_stop; do
+            if nm -g --defined-only \
+              android/app/src/main/cpp/libs/arm64-v8a/libmm2.a \
+              2>/dev/null |
+              grep -qE "[[:space:]]${symbol}$"; then
+              echo "OK: $symbol"
+            else
+              echo "MISSING: $symbol"
+            fi
+          done
+
       - name: Create API binaries directory
         run: mkdir -p build/api-binaries
 
       - name: Copy API binaries
+        shell: bash
         run: |
           cp \
             android/app/src/main/cpp/libs/armeabi-v7a/libmm2.a \
